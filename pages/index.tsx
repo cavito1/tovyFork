@@ -32,16 +32,16 @@ const Home: NextPage = () => {
 		}).catch((err) => {
 			console.log(err);
 			setLoading(false);
-			if (err.response.data.error === "You are not a high enough rank") {
+			if (err.response.data.error === "You are not in a high enough rank!") {
 				methods.setError("groupID", {
 					type: 'custom',
-					message: 'You need to be a rank 10 or higher to create a workspace'
+					message: 'You need to be a rank 10 or higher to create a workspace!'
 				});
 			}
 			if (err.response.data.error === "Workspace already exists") {
 				methods.setError("groupID", {
 					type: 'custom',
-					message: 'This group already has a workspace'
+					message: 'This group already has a workspace!'
 				});
 			}
 		});
@@ -164,7 +164,7 @@ const Home: NextPage = () => {
 											<div className="mt-2">
 												<form onSubmit={methods.handleSubmit(createWorkspace)}>
 													<FormProvider {...methods}>
-														<Input label="Group ID" placeholder="532"  {...methods.register('groupID', { required: {value: true, message: 'This field is required'}, pattern: { value: /^[a-zA-Z0-9-.]*$/, message: 'No spaces or special charactars' }, maxLength: { value: 10, message: 'Length must be below 10 charactars`' } })} />
+														<Input label="Group ID" placeholder="532"  {...methods.register('groupID', { required: {value: true, message: 'This field is required'}, pattern: { value: /^[a-zA-Z0-9-.]*$/, message: 'No spaces or special characters' }, maxLength: { value: 10, message: 'Length must be below 10 charactars`' } })} />
 													</FormProvider>
 												</form>
 											</div>

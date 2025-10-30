@@ -1,8 +1,7 @@
-
 <div>
   <div align="center">
     <img height="250px" src=".github/logo.png"></img>
-    <h1>Tovy, a staff management system for Roblox groups</h1>
+    <h1>Bloxion, a staff management system for Roblox groups</h1>
   </div>
   <ul>
     <li><a href="#about">About</a></li>
@@ -12,7 +11,7 @@
   </ul>
   <h2>About</h2>
   <p>
-    Tovy is an open source staff management platform inspired by Hyra. It allows Roblox groups to manage their group members in a more intuitive and powerful way, while still being simple to use.
+    Bloxion is an open source staff management platform forked of Tovy. It allows Roblox groups to manage their group members in a more intuitive and powerful way, while still being simple to use.
   </p>
   <h2>Why consider</h2>
   <ul>
@@ -59,19 +58,6 @@
     </li>
     <li>
       Completely open source
-    </li>
-  </ul>
-  <h2>Don't want to host yourself?</h2>
-    <p>
-    Tovy has a service dedicated to providing Tovy hosting at a low price per month. -- <a href="https://tovyblox.xyz/">Find out more!</a>
-  </p>
-  <h2>Quicklinks</h2>
-  <ul>
-    <li>
-      Don't know how to install? –– <a href="https://docs.tovyblox.xyz/">Visit our documentation!</a>
-    </li>
-    <li>
-      🐛 Bugs? ✨ Suggestions? –– <a href="https://feedback.tovyblox.xyz/">Let us know here!</a>
     </li>
   </ul>
   <h2>License</h2>

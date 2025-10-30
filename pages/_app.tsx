@@ -3,8 +3,7 @@ import type { AppProps } from "next/app";
 import { loginState } from "@/state";
 import { RecoilRoot } from "recoil";
 import { pageWithLayout } from "@/layoutTypes";
-import RecoilNexus from "recoil-nexus";
-import { setRecoil } from "recoil-nexus";
+import RecoilNexus, { setRecoil } from "recoil-nexus";
 import { useEffect, useState } from "react";
 import Router from "next/router";
 import Head from "next/head";
@@ -18,13 +17,10 @@ import {
 	Tooltip,
 	Legend,
 	PointElement,
-	LineElement
+	LineElement,
 } from "chart.js";
 
-type AppPropsWithLayout = AppProps & {
-	Component: pageWithLayout
-};
-
+// Chart.js setup
 ChartJS.register(
 	CategoryScale,
 	LinearScale,
@@ -36,32 +32,69 @@ ChartJS.register(
 	LineElement
 );
 
+type AppPropsWithLayout = AppProps & {
+	Component: pageWithLayout;
+};
+
+// Reusable loading spinner
+function LoadingSpinner() {
+	return (
+		<div className="flex h-screen items-center justify-center">
+			<svg
+				aria-hidden="true"
+				className="w-16 h-16 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+				viewBox="0 0 100 101"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M100 50.59C100 78.2 77.61 100.59 50 100.59S0 78.2 0 50.59 22.38.59 50 .59 100 22.98 100 50.59Z"
+					fill="currentColor"
+				/>
+				<path
+					d="M93.96 39.04a4 4 0 0 0 3.04-5.49A49.94 49.94 0 0 0 56.77 1.05a4 4 0 1 0-1.32 7.95 42 42 0 0 1 38.5 30.05Z"
+					fill="currentFill"
+				/>
+			</svg>
+		</div>
+	);
+}
+
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 	const [loading, setLoading] = useState(true);
 	const Layout = Component.layout || (({ children }) => <>{children}</>);
 
 	useEffect(() => {
-		const checkLogin = async () => {
-			let req;
-			try {
-				req = await axios.get("/api/@me");
-			} catch (err: any) {
-				if (err.response.data.error === "Workspace not setup") {
-					Router.push("/welcome");
-					setLoading(false);
-					return;
-				}
+		let called = false;
 
-				if (err.response.data.error === "Not logged in") {
-					Router.push("/login");
-					setLoading(false);
-					return;
+		const checkLogin = async () => {
+			if (called) return;
+			called = true;
+
+			// Try loading cached login first
+			const cached = sessionStorage.getItem("orbit:user");
+			if (cached) {
+				setRecoil(loginState, JSON.parse(cached));
+				setLoading(false);
+				return;
+			}
+
+			try {
+				const req = await axios.get("/api/@me");
+				if (req.data?.user) {
+					setRecoil(loginState, {
+						...req.data.user,
+						workspaces: req.data.workspaces,
+					});
+					sessionStorage.setItem("orbit:user", JSON.stringify(req.data.user));
+				}
+			} catch (err: any) {
+				const error = err.response?.data?.error;
+				if (error === "Workspace not setup") {
+					Router.replace("/welcome");
+				} else if (error === "Not logged in") {
+					Router.replace("/login");
 				}
 			} finally {
-				setRecoil(loginState, {
-					...req?.data.user,
-					workspaces: req?.data.workspaces,
-				});
 				setLoading(false);
 			}
 		};
@@ -72,33 +105,18 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 	return (
 		<RecoilRoot>
 			<Head>
-				<title>Tovy</title>
+				<title>Bloxion</title>
+				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 			</Head>
+
 			<RecoilNexus />
-			{!loading && (
+
+			{loading ? (
+				<LoadingSpinner />
+			) : (
 				<Layout>
 					<Component {...pageProps} />
 				</Layout>
-			)}
-			{loading && (
-				<div className="flex h-screen">
-					<svg
-						aria-hidden="true"
-						className="w-24 h-24 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600 my-auto mr-auto ml-auto"
-						viewBox="0 0 100 101"
-						fill="none"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-							fill="currentColor"
-						/>
-						<path
-							d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-							fill="currentFill"
-						/>
-					</svg>
-				</div>
 			)}
 		</RecoilRoot>
 	);
